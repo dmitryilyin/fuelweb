@@ -19,7 +19,6 @@ BuildArch:      noarch
 Vendor:         Dmitry Shulyak <yashulyak@gmail.com>
 Url:            http://github.com/Mirantis/
 
-BuildRequires: python-setuptools
 
 Requires: python-cliff-tablib
 Requires: scapy
