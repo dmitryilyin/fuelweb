@@ -41,7 +41,8 @@ SANDBOX_PACKAGES:=\
 	rubygems \
 	tar \
 	which \
-	zlib-devel
+	zlib-devel \
+	python-setuptools
 
 
 define SANDBOX_UP

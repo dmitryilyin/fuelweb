@@ -11,7 +11,7 @@ Name:           %{name}
 Version:        %{version}
 Release:        %{release}
 Source0:        %{name}
-License:        BSD
+License:        GPLv2
 Group:          Development/Packages
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix:         %{_prefix}
