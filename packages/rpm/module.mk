@@ -64,7 +64,7 @@ $(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done: \
 	sudo cp -r $(SOURCE_DIR)/packages/rpm/dhcp-checker/* $(SANDBOX)/tmp/SOURCES/
 	sudo cp $(SOURCE_DIR)/packages/rpm/specs/dhcp-checker.spec $(SANDBOX)/tmp
 	sudo chroot $(SANDBOX) rpmbuild -vv --define "_topdir /tmp" -ba /tmp/dhcp-checker.spec
-	cp $(SANDBOX)/tmp/RPMS/noarch/dhcp_checker-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/noarch/
+	cp $(SANDBOX)/tmp/RPMS/noarch/dhcp_checker-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64/
 	sudo sh -c "$${SANDBOX_DOWN}"
 	$(ACTION.TOUCH)
 
