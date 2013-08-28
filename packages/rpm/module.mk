@@ -51,6 +51,25 @@ $(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done: \
 	sudo sh -c "$${SANDBOX_DOWN}"
 	$(ACTION.TOUCH)
 
+$(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX
+$(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done: export SANDBOX_UP:=$(SANDBOX_UP)
+$(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
+$(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done: \
+		$(BUILD_DIR)/packages/rpm/prep.done \
+		$(SOURCE_DIR)/packages/rpm/specs/dhcp-checker.spec \
+	sudo sh -c "$${SANDBOX_UP}"
+	sudo mkdir -p $(SANDBOX)/tmp/SOURCES
+	sudo sh -c "$${SANDBOX_UP}"
+	sudo mkdir -p $(SANDBOX)/tmp/SOURCES
+	sudo cp $(LOCAL_MIRROR_SRC)/* $(SANDBOX)/tmp/SOURCES
+	sudo cp -r $(SOURCE_DIR)/packages/rpm/dhcp-checker/* $(SANDBOX)/tmp/SOURCES/
+	sudo cp $(SOURCE_DIR)/packages/rpm/specs/dhcp-checker.spec $(SANDBOX)/tmp
+	sudo chroot $(SANDBOX) rpmbuild -vv --define "_topdir /tmp" -ba /tmp/dhcp-checker.spec
+	cp $(SANDBOX)/tmp/RPMS/noarch/dhcp_checker-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/noarch/
+	sudo sh -c "$${SANDBOX_DOWN}"
+	$(ACTION.TOUCH)
+
+
 $(BUILD_DIR)/packages/rpm/rpm-rbenv-ruby.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX
 $(BUILD_DIR)/packages/rpm/rpm-rbenv-ruby.done: export SANDBOX_UP:=$(SANDBOX_UP)
 $(BUILD_DIR)/packages/rpm/rpm-rbenv-ruby.done: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
