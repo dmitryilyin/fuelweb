@@ -57,8 +57,7 @@ $(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done: export SANDBOX_DOWN:=$(SANDBOX_
 $(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done: \
 		$(BUILD_DIR)/packages/rpm/prep.done \
 		$(SOURCE_DIR)/packages/rpm/specs/dhcp-checker.spec \
-	sudo sh -c "$${SANDBOX_UP}"
-	sudo mkdir -p $(SANDBOX)/tmp/SOURCES
+		$(call find-files,$(SOURCE_DIR)/packages/rpm/dhcp-checker)
 	sudo sh -c "$${SANDBOX_UP}"
 	sudo mkdir -p $(SANDBOX)/tmp/SOURCES
 	sudo cp $(LOCAL_MIRROR_SRC)/* $(SANDBOX)/tmp/SOURCES
@@ -68,7 +67,6 @@ $(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done: \
 	cp $(SANDBOX)/tmp/RPMS/noarch/dhcp_checker-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/noarch/
 	sudo sh -c "$${SANDBOX_DOWN}"
 	$(ACTION.TOUCH)
-
 
 $(BUILD_DIR)/packages/rpm/rpm-rbenv-ruby.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX
 $(BUILD_DIR)/packages/rpm/rpm-rbenv-ruby.done: export SANDBOX_UP:=$(SANDBOX_UP)
@@ -119,7 +117,8 @@ $(BUILD_DIR)/packages/rpm/repo.done: \
 		$(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done \
 		$(BUILD_DIR)/packages/rpm/rpm-nailgun-redhat-license.done \
 		$(BUILD_DIR)/packages/rpm/rpm-rbenv-ruby.done \
-		$(BUILD_DIR)/packages/rpm/rpm-mcollective.done
+		$(BUILD_DIR)/packages/rpm/rpm-mcollective.done \
+		$(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \;
 	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
