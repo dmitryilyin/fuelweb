@@ -21,8 +21,8 @@ Url:            http://github.com/Mirantis/
 
 BuildRequires: python-setuptools
 
-Require: python-cliff-tablib
-Require: scapy
+Requires: python-cliff-tablib
+Requires: scapy
 
 
 %description
