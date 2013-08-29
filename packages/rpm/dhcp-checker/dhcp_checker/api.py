@@ -17,6 +17,7 @@ from scapy.all import *
 import itertools
 import multiprocessing
 import functools
+import subprocess
 
 
 def pick_ip(range_start, range_end):
@@ -37,6 +38,15 @@ def pick_ip(range_start, range_end):
             range_start[i] += 1
         else:
             i += 1
+
+
+def check_iface_exist(iface):
+    """Check provided interface exists
+    """
+    cmd = ["ip","link", "show", iface]
+    response = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+    return not response.stderr.read()
 
 
 def format_options(options):
@@ -93,7 +103,8 @@ def check_dhcp_on_eth(iface, timeout):
 
     conf.checkIPaddr = False
     dhcp_options = [("message-type", "discover"),
-                    ("param_req_list", format_options([1, 2, 3, 4, 5, 6, 11, 12, 13, 15, 16, 17, 18, 22, 23,
+                    ("param_req_list", format_options([1, 2, 3, 4, 5, 6,
+                        11, 12, 13, 15, 16, 17, 18, 22, 23,
                         28, 40, 41, 42, 43, 50, 51, 54, 58, 59, 60, 66, 67])),
                     "end"]
 
@@ -113,9 +124,10 @@ def check_dhcp(ifaces, timeout=5):
     """Given list of ifaces. Process them in separate processes
         >>> check_dhcp(['eth1', 'eth2'])
     """
-    pool = multiprocessing.Pool(len(ifaces))
+    ifaces_filtered = filter(check_iface_exist, ifaces)
+    pool = multiprocessing.Pool(len(ifaces_filtered))
     return itertools.chain(*pool.map(check_dhcp_on_eth,
-        ((iface, timeout) for iface in ifaces)))
+        ((iface, timeout) for iface in ifaces_filtered)))
 
 
 @single_format
