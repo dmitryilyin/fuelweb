@@ -27,6 +27,7 @@ BOOTSTRAP_RPMS:=\
 	vconfig \
 	vim-minimal \
 	wget \
+	dhcp-checker
 
 
 BOOTSTRAP_RPMS_GARBAGE:=\
