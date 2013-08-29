@@ -75,8 +75,10 @@ def single_format(func):
 
             results = (
                 iface, response[1][Ether].src, response[1][IP].src,
-                dhcp_options['server_id'], response[1][BOOTP].giaddr,response[1][UDP].sport,
-                DHCPTypes[dhcp_options['message-type']], response[1][BOOTP].yiaddr)
+                dhcp_options['server_id'], response[1][BOOTP].giaddr,
+                response[1][UDP].sport,
+                DHCPTypes[dhcp_options['message-type']],
+                response[1][BOOTP].yiaddr)
             data.append(dict(zip(columns, results)))
         return data
     return formatter
@@ -125,6 +127,8 @@ def check_dhcp(ifaces, timeout=5):
         >>> check_dhcp(['eth1', 'eth2'])
     """
     ifaces_filtered = filter(check_iface_exist, ifaces)
+    if not ifaces_filtered:
+        raise EnvironmentError("No valid interfaces provided.")
     pool = multiprocessing.Pool(len(ifaces_filtered))
     return itertools.chain(*pool.map(check_dhcp_on_eth,
         ((iface, timeout) for iface in ifaces_filtered)))
