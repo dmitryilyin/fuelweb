@@ -56,6 +56,20 @@ def format_options(options):
     """
     return "".join((chr(item) for item in options))
 
+
+def _dhcp_options(dhcp_options):
+    """[('message-type', 2), ('server_id', '192.168.0.5'),
+        ('name_server', '192.168.0.1', '192.168.0.2'), 'end']
+    """
+    for option in dhcp_options:
+        if isinstance(option, (tuple, list)):
+            header = option[0]
+            if len(option[1:]) > 1:
+                yield (header, option)
+            else:
+                yield (header, option[1])
+
+
 def single_format(func):
     """All request formatting logic lies here
     """
@@ -69,10 +83,7 @@ def single_format(func):
         #scapy stores all sequence of requests
         #so ans[0][1] would be response to first request
         for response in ans:
-            dhcp_options = dict((option for option in
-                                 response[1][DHCP].options[:-1]
-                                 if isinstance(option, tuple)))
-
+            dhcp_options = dict(_dhcp_options(response[1][DHCP].options))
             results = (
                 iface, response[1][Ether].src, response[1][IP].src,
                 dhcp_options['server_id'], response[1][BOOTP].giaddr,
