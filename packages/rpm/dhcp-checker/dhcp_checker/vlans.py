@@ -24,13 +24,19 @@ class VlansContext(object):
         self.vlans = vlans
         self.delete = delete
 
-    def __enter__(self):
+    def start():
         for vlan in self.vlans:
             vlan.up()
 
-    def __exit__(self, type, value, traceback):
+    def end():
         for vlan in self.vlans:
             vlan.down(delete=self.delete)
+
+    def __enter__(self):
+        self.start()
+
+    def __exit__(self, type, value, traceback):
+        self.end()
 
 
 class Vlan(object):
@@ -41,7 +47,6 @@ class Vlan(object):
         self.iface = iface
         self.number = number
         self.config = vlan_config if vlan_config else {}
-        self.state_before = self.state
 
     @property
     def ident(self):
@@ -57,30 +62,25 @@ class Vlan(object):
             return None
 
     def create(self):
-        return utils.command_util('vconfig', 'add', self.iface, self.number)
+        return utils.command_util("ip", "link", "add", "link", self.iface,
+            "name", self.ident, "type", "vlan", "id", self.number)
 
     def link_up(self):
-        return utils.command_util('ifconfig', self.ident, 'up')
+        return utils.command_util('ip', 'link', 'set',
+                                  'dev', self.ident, 'up')
 
     def delete(self):
-        return utils.command_util('vconfig', 'rem', self.ident)
+        return utils.command_util("ip", "link", "del", "dev", self.ident)
 
     def link_down(self):
-        return utils.command_util('ifconfig', self.ident, 'down')
+        return utils.command_util('ip', 'link', 'set',
+                                  'dev', self.ident, 'up')
 
     def up(self):
-        state = self.state
-        if state == None:
-            self.create()
-            self.link_up()
-        elif state == 'DOWN':
-            self.link_up()
+        self.create()
+        self.link_up()
 
-    def down(self, delete=True, force=False):
-        state = self.state
-        if force or self.state_before == None:
-            self.link_down()
-            if delete:
-                self.delete()
-        elif self.state_before == 'DOWN':
-            self.link_down()
+    def down(self, delete=True):
+        self.link_down()
+        if delete:
+            self.delete()

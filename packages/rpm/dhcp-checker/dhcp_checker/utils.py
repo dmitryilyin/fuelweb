@@ -35,6 +35,7 @@ def check_iface_exist(iface):
 
 
 def coroutine(func):
+    # will be used later
     @functools.wraps(func)
     def starter(*args, **kwargs):
         coro = func(*args, **kwargs)

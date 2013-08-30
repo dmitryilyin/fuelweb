@@ -19,6 +19,8 @@ import multiprocessing
 import functools
 import subprocess
 from dhcp_checker import utils
+from dhcp_checker import vlans
+
 
 def pick_ip(range_start, range_end):
     """Given start_range, end_range generate list of ips
@@ -134,6 +136,12 @@ def check_dhcp(ifaces, timeout=5):
     pool = multiprocessing.Pool(len(ifaces_filtered))
     return itertools.chain(*pool.map(check_dhcp_on_eth,
         ((iface, timeout) for iface in ifaces_filtered)))
+
+
+def check_dhcp_with_vlans(iface, vlans):
+    vlans = (vlans.Vlan(iface, vlan) for vlan in vlans)
+    with vlans.VlansContext(vlans):
+        return check_dhcp([v.ident for v in vlans] + iface, timeout=7)
 
 
 @single_format
