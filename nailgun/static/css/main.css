@@ -350,6 +350,18 @@ h6.page-title {
   margin-top: 0px;
 }
 
+.footer-lang {
+  display: block;
+  padding: 14px 20px 0px 5px;
+  color: #7789a0;
+  font-size: 11px;
+  margin-top: 0px;
+}
+
+.lang-selector {
+  cursor: pointer;
+}
+
 .roles-action-link {
   padding-top: 8px;
 }

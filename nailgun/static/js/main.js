@@ -73,9 +73,7 @@ requirejs.config({
 require(['app', 'text!i18n/translation.json'], function (app, translation) {
     'use strict';
 
-    var locale = 'zh-CN';
     $.i18n.init({
-        lng: locale,
         resStore: JSON.parse(translation)
     }).always(function() {
         $(document).ready(app.initialize);

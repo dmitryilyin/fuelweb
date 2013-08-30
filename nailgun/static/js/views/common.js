@@ -24,9 +24,10 @@ define(
     'text!templates/common/notifications_popover.html',
     'text!templates/common/breadcrumb.html',
     'text!templates/common/footer.html',
-    'text!templates/common/rhel_credentials.html'
+    'text!templates/common/rhel_credentials.html',
+    'text!i18n/translation.json'
 ],
-function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsTemplate, notificationsPopoverTemplate, breadcrumbsTemplate, footerTemplate, rhelCredentialsTemplate) {
+function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsTemplate, notificationsPopoverTemplate, breadcrumbsTemplate, footerTemplate, rhelCredentialsTemplate, translation) {
     'use strict';
 
     var views = {};
@@ -223,6 +224,17 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
 
     views.Footer = Backbone.View.extend({
         template: _.template(footerTemplate),
+        events: {
+            'click .lang-selector': 'setLocale'
+        },
+        setLocale: function(e){
+            var locales = {
+                'EN': 'en-US',
+                'CN': 'zh-CN'
+            }
+            $.i18n.setLng(locales[e.currentTarget.innerText]);
+            window.location = '/';
+        },
         initialize: function(options) {
             $.ajax({url: '/api/version'}).done(_.bind(function(data) {
                 this.version = data.release;
