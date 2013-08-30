@@ -233,7 +233,7 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
                 'CN': 'zh-CN'
             }
             $.i18n.setLng(locales[e.currentTarget.innerText]);
-            window.location = '/';
+            window.location.reload();
         },
         initialize: function(options) {
             $.ajax({url: '/api/version'}).done(_.bind(function(data) {
