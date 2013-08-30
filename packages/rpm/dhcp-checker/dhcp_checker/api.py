@@ -18,7 +18,7 @@ import itertools
 import multiprocessing
 import functools
 import subprocess
-
+from dhcp_checker import utils
 
 def pick_ip(range_start, range_end):
     """Given start_range, end_range generate list of ips
@@ -38,15 +38,6 @@ def pick_ip(range_start, range_end):
             range_start[i] += 1
         else:
             i += 1
-
-
-def check_iface_exist(iface):
-    """Check provided interface exists
-    """
-    cmd = ["ip","link", "show", iface]
-    response = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-    return not response.stderr.read()
 
 
 def format_options(options):
@@ -137,7 +128,7 @@ def check_dhcp(ifaces, timeout=5):
     """Given list of ifaces. Process them in separate processes
         >>> check_dhcp(['eth1', 'eth2'])
     """
-    ifaces_filtered = filter(check_iface_exist, ifaces)
+    ifaces_filtered = filter(utils.check_iface_exist, ifaces)
     if not ifaces_filtered:
         raise EnvironmentError("No valid interfaces provided.")
     pool = multiprocessing.Pool(len(ifaces_filtered))

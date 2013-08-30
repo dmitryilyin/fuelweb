@@ -15,23 +15,38 @@
 
 import subprocess
 import json
+import unittest
+
+from dhcp_checker import utils
+
+# def test_check_roque_dhcp_all():
+#     expected = {"eth2": [["08:00:27:66:44:3c", "10.10.0.8"],
+#                          ["08:00:27:b5:26:9c", "10.10.0.4"]],
+#                 "eth1": [["08:00:27:89:d7:f9", "192.168.0.5"]],
+#                 "eth0": [["52:54:00:12:35:02", "10.0.2.2"]]}
+#     resp = subprocess.Popen(['sudo', 'dhcp-check'],
+#                             stdout=subprocess.PIPE)
+#     data = json.loads(resp.stdout.read())
+#     assert data == expected
 
 
-def test_check_roque_dhcp_all():
-    expected = {"eth2": [["08:00:27:66:44:3c", "10.10.0.8"],
-                         ["08:00:27:b5:26:9c", "10.10.0.4"]],
-                "eth1": [["08:00:27:89:d7:f9", "192.168.0.5"]],
-                "eth0": [["52:54:00:12:35:02", "10.0.2.2"]]}
-    resp = subprocess.Popen(['sudo', 'dhcp-check'],
-                            stdout=subprocess.PIPE)
-    data = json.loads(resp.stdout.read())
-    assert data == expected
+# def test_check_one_eth():
+#     eth = 'eth1'
+#     expected = {"eth1": [["08:00:27:89:d7:f9", "192.168.0.5"]]}
+#     resp = subprocess.Popen(['sudo', 'dhcp-check', '--eth=%s' % eth],
+#                             stdout=subprocess.PIPE)
+#     data = json.loads(resp.stdout.read())
+#     assert data == expected
 
 
-def test_check_one_eth():
-    eth = 'eth1'
-    expected = {"eth1": [["08:00:27:89:d7:f9", "192.168.0.5"]]}
-    resp = subprocess.Popen(['sudo', 'dhcp-check', '--eth=%s' % eth],
-                            stdout=subprocess.PIPE)
-    data = json.loads(resp.stdout.read())
-    assert data == expected
+class VlanCreationTestCase(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.vlan = utils.Vlan('eth0', '100')
+
+    def test_vlan_creation(self):
+        self.vlan.up()
+
+    def test_vlan_deletion(self):
+        self.vlan.down()
