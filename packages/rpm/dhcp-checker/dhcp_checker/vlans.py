@@ -15,45 +15,14 @@ from dhcp_checker import utils
 import re
 
 
-@utils.coroutine
-def links_manager():
-    def up(config):
-        utils.command_util('ifconfig', self.config['vlan_id'], 'up')
-    def down(config):
-        utils.command_util('ifconfig', self.config['vlan_id'], 'down')
-
-    while True:
-        command, config = (yield)
-
-
-@utils.coroutine
-def vconfig_manager():
-    def create():
-        pass
-    def delete():
-        pass
-
-    while True:
-        command, config = (yield)
-
-
-@utils.coroutine
-def sysconfig_manager():
-    def create():
-        pass
-    def delete():
-        pass
-        while True:
-            command, config = (yield)
-
-
 class VlansContext(object):
 
-    def __init__(self, vlans):
+    def __init__(self, vlans, delete=True):
         """
         @ifaces - list or tuple of (iface, vlan) pairs
         """
         self.vlans = vlans
+        self.delete = delete
 
     def __enter__(self):
         for vlan in self.vlans:
@@ -61,7 +30,7 @@ class VlansContext(object):
 
     def __exit__(self, type, value, traceback):
         for vlan in self.vlans:
-            vlan.down(delete=True)
+            vlan.down(delete=self.delete)
 
 
 class Vlan(object):
@@ -72,6 +41,7 @@ class Vlan(object):
         self.iface = iface
         self.number = number
         self.config = vlan_config if vlan_config else {}
+        self.state_before = self.state
 
     @property
     def ident(self):
@@ -86,20 +56,31 @@ class Vlan(object):
         else:
             return None
 
+    def create(self):
+        return utils.command_util('vconfig', 'add', self.iface, self.number)
+
+    def link_up(self):
+        return utils.command_util('ifconfig', self.ident, 'up')
+
+    def delete(self):
+        return utils.command_util('vconfig', 'rem', self.ident)
+
+    def link_down(self):
+        return utils.command_util('ifconfig', self.ident, 'down')
+
     def up(self):
-        up = lambda: utils.command_util('ifconfig', self.ident, 'up')
-        create = lambda: utils.command_util('vconfig', 'add',
-                                            self.iface, self.number)
         state = self.state
         if state == None:
-            create()
-            up()
+            self.create()
+            self.link_up()
         elif state == 'DOWN':
-            up()
+            self.link_up()
 
-    def down(self, delete=False):
+    def down(self, delete=True, force=False):
         state = self.state
-        if state != None:
-            utils.command_util('ifconfig', self.ident, 'down')
+        if force or self.state_before == None:
+            self.link_down()
             if delete:
-                utils.command_util('vconfig', 'rem', self.ident)
+                self.delete()
+        elif self.state_before == 'DOWN':
+            self.link_down()

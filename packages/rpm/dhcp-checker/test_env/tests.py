@@ -41,7 +41,24 @@ class VlanCreationTestCase(unittest.TestCase):
         self.vlan.down()
 
 
+class VlanCreationWithExistingTestCase(unittest.TestCase):
+
+
+    def test_check_vlan_down_status(self):
+        self.vlan_down = vlans.Vlan('eth0', '110')
+        self.vlan_down.create()
+        self.assertEqual(self.vlan_down.state, 'DOWN')
+        self.vlan_down.delete()
+
+    def test_repeat_created_vlan(self):
+        self.vlan_up = vlans.Vlan('eth0', '112')
+        self.vlan_up.up()
+        self.assertEqual(self.vlan_up.state, 'UP')
+        self.vlan_up.delete()
+
+
 class WithVlanDecoratorTestCase(unittest.TestCase):
+
 
     def setUp(self):
         fixtures = [('eth0', '101'), ('eth0', '102')]
