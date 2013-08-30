@@ -163,6 +163,12 @@ class NodeCollectionHandler(JSONHandler):
         """
         data = self.checked_data()
 
+        if 'status' not in data:
+            error = web.forbidden()
+            error.message = "Only bootstarp nodes are " \
+                            "allowed to be registered."
+            raise error
+
         node = Node()
         for key, value in data.iteritems():
             if key == "id":
