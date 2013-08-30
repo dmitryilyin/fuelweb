@@ -25,6 +25,8 @@ class BaseCommand(command.Command):
         parser = super(BaseCommand, self).get_parser(prog_name)
         parser.add_argument('--timeout', default=5, type=int,
             help="Provide timeout for each network request")
+        parser.add_argument('--repeat', default=2, type=int,
+            help="Provide number of repeats for request")
         return parser
 
 
@@ -40,7 +42,9 @@ class ListDhcpServers(lister.Lister, BaseCommand):
         return parser
 
     def take_action(self, parsed_args):
-        res = api.check_dhcp(parsed_args.ifaces, timeout=parsed_args.timeout)
+        res = api.check_dhcp(parsed_args.ifaces,
+                            timeout=parsed_args.timeout,
+                            repeat=parsed_args.repeat)
         first = res.next()
         columns = first.keys()
         return columns, [first.values()] + [item.values() for item in res]

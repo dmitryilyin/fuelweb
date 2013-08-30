@@ -25,13 +25,18 @@ from dhcp_checker import api
 
 class TestDhcpServers(unittest.TestCase):
 
+    def test_dhcp_server_on_eth0(self):
+        response = api.check_dhcp_on_eth('eth0', 5)
+        self.assertEqual(len(response), 1)
+        self.assertEqual(response[0]['server_ip'], '10.0.2.2')
+
     def test_dhcp_server_on_eth1(self):
-        response = api.check_dhcp_on_eth('eth1')
+        response = api.check_dhcp_on_eth('eth1', 5)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['server_ip'], '192.168.0.5')
 
     def test_dhcp_server_on_eth2(self):
-        response = api.check_dchp_on_eth('eth2')
+        response = api.check_dhcp_on_eth('eth2', 5)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['server_ip'], '10.10.0.10')
 
@@ -74,14 +79,9 @@ class VlanCreationWithExistingTestCase(unittest.TestCase):
 
 class WithVlanDecoratorTestCase(unittest.TestCase):
 
-    def setUp(self):
-        fixtures = [('eth0', '101'), ('eth0', '102'), ('eth0', '103')]
-        self.vlans = (vlans.Vlan(item[0], item[1]) for item in fixtures)
 
     def test_with_vlan_enter(self):
-        with vlans.VlansContext(self.vlans):
+        with vlans.VlansContext('eth0', ('101','102','103')) as vlan_list:
             time.sleep(5)
-            for v in self.vlans:
+            for v in vlan_list:
                 self.assertEqual('UP', v.state)
-        for v in self.vlans:
-            self.assertEqual(None, v.state)

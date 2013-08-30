@@ -22,83 +22,9 @@ from dhcp_checker import utils
 from dhcp_checker import vlans
 
 
-def pick_ip(range_start, range_end):
-    """Given start_range, end_range generate list of ips
-        >>> next(pick_ip('192.168.1.10','192.168.1.13'))
-        '192.168.1.10'
-    """
-    split_address = lambda ip_address: \
-        [int(item) for item in ip_address.split('.')]
-    range_start = split_address(range_start)
-    range_end = split_address(range_end)
-    i = 0
-    # ipv4 subnet cant be longer that 4 items
-    while i < 4:
-        # 255 - end of subnet
-        if not range_start[i] == range_end[i] and range_start[i] < 255:
-            yield '.'.join([str(item) for item in range_start])
-            range_start[i] += 1
-        else:
-            i += 1
 
-
-def format_options(options):
-    """Util for serializing dhcp options
-    @options = [1,2,3]
-    return '\x01\x02\x03'
-    """
-    return "".join((chr(item) for item in options))
-
-
-def _dhcp_options(dhcp_options):
-    """[('message-type', 2), ('server_id', '192.168.0.5'),
-        ('name_server', '192.168.0.1', '192.168.0.2'), 'end']
-    """
-    for option in dhcp_options:
-        if isinstance(option, (tuple, list)):
-            header = option[0]
-            if len(option[1:]) > 1:
-                yield (header, option)
-            else:
-                yield (header, option[1])
-
-
-def single_format(func):
-    """All request formatting logic lies here
-    """
-    @functools.wraps(func)
-    def formatter(*args, **kwargs):
-        iface = args[0]
-        ans = func(*args, **kwargs)
-        columns = ('iface', 'mac', 'server_ip', 'server_id', 'gateway',
-               'dport', 'message', 'yiaddr')
-        data = []
-        #scapy stores all sequence of requests
-        #so ans[0][1] would be response to first request
-        for response in ans:
-            dhcp_options = dict(_dhcp_options(response[1][DHCP].options))
-            results = (
-                iface, response[1][Ether].src, response[1][IP].src,
-                dhcp_options['server_id'], response[1][BOOTP].giaddr,
-                response[1][UDP].sport,
-                DHCPTypes[dhcp_options['message-type']],
-                response[1][BOOTP].yiaddr)
-            data.append(dict(zip(columns, results)))
-        return data
-    return formatter
-
-
-def multiproc_map(func):
-    # multiproc map could not work with format *args
-    @functools.wraps(func)
-    def workaround(*args, **kwargs):
-        args = args[0] if isinstance(args[0], (tuple, list)) else args
-        return func(*args, **kwargs)
-    return workaround
-
-
-@multiproc_map
-@single_format
+@utils.multiproc_map
+@utils.single_format
 def check_dhcp_on_eth(iface, timeout):
     """Check if there is roque dhcp server in network on given iface
         @eth - name of the ethernet interface
@@ -109,7 +35,7 @@ def check_dhcp_on_eth(iface, timeout):
 
     conf.checkIPaddr = False
     dhcp_options = [("message-type", "discover"),
-                    ("param_req_list", format_options([1, 2, 3, 4, 5, 6,
+                    ("param_req_list", utils.format_options([1, 2, 3, 4, 5, 6,
                         11, 12, 13, 15, 16, 17, 18, 22, 23,
                         28, 40, 41, 42, 43, 50, 51, 54, 58, 59, 60, 66, 67])),
                     "end"]
@@ -126,25 +52,30 @@ def check_dhcp_on_eth(iface, timeout):
     return ans
 
 
-def check_dhcp(ifaces, timeout=5):
+@utils.filter_duplicated_results
+def check_dhcp(ifaces, timeout=5, repeat=2):
     """Given list of ifaces. Process them in separate processes
         >>> check_dhcp(['eth1', 'eth2'])
     """
-    ifaces_filtered = filter(utils.check_iface_exist, ifaces)
+    ifaces_filtered = list(utils.filtered_ifaces(ifaces))
     if not ifaces_filtered:
         raise EnvironmentError("No valid interfaces provided.")
-    pool = multiprocessing.Pool(len(ifaces_filtered))
+    pool = multiprocessing.Pool(len(ifaces_filtered)*repeat)
     return itertools.chain(*pool.map(check_dhcp_on_eth,
-        ((iface, timeout) for iface in ifaces_filtered)))
+        ((iface, timeout) for iface in ifaces_filtered*repeat)))
 
 
-def check_dhcp_with_vlans(iface, vlans):
-    vlans = (vlans.Vlan(iface, vlan) for vlan in vlans)
-    with vlans.VlansContext(vlans):
-        return check_dhcp([v.ident for v in vlans] + iface, timeout=7)
+def check_dhcp_with_vlans(iface, vlans, timeout=7, repeat=2):
+    """
+    @ifaces - string : eth0, eth1
+    @vlans - iterable (100, 101, 102)
+    """
+    with vlans.VlansContext(iface, vlans) as vlan_list:
+        return check_dhcp([v.ident for v in vlan_list] + iface,
+            timeout=timeout, repeat=repeat)
 
 
-@single_format
+@utils.single_format
 def check_dhcp_request(iface, server, range_start, range_end, timeout=5):
     """Provide interface, server endpoint and pool of ip adresses
         Should be used after offer received
@@ -159,7 +90,7 @@ def check_dhcp_request(iface, server, range_start, range_end, timeout=5):
 
 
 
-    ip_address = next(pick_ip(range_start, range_end))
+    ip_address = next(utils.pick_ip(range_start, range_end))
 
     # note lxc dhcp server does not respond to unicast
     dhcp_request = (Ether(src=hw, dst="ff:ff:ff:ff:ff:ff") /

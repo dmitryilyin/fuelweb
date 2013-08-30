@@ -13,8 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import os
-#explicitly set editor for cmd2
-#this is know bug fixed in cmd2==0.6.6
+#explicitly set editor for cmd2, will throw a lot of which /usr/bin/.. thrash
+#this is known bug fixed in cmd2==0.6.6
 os.environ['EDITOR'] = '/usr/bin/nano'
 import sys
 from cliff.app import App
@@ -38,6 +38,7 @@ class DhcpApp(App):
         logger.propagate = False
         runtime_logger = logging.getLogger('scapy.runtime')
         runtime_logger.setLevel(logging.ERROR)
+
 
 def main(argv=sys.argv[1:]):
     myapp = DhcpApp()
