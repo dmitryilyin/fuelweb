@@ -3,6 +3,9 @@
 
 *.gem
 
+# Files with network traffic
+*.pcap
+
 # vim swap files
 .*.swp
 

@@ -17,11 +17,12 @@ import re
 
 class VlansContext(object):
 
-    def __init__(self, iface, vlans):
+    def __init__(self, iface, vlans, delete=False):
         """
         @ifaces - list or tuple of (iface, vlan) pairs
         """
         self.vlans = [Vlan(iface, vlan) for vlan in vlans]
+        self.delete = delete
 
     def start(self):
         for vlan in self.vlans:
@@ -29,7 +30,7 @@ class VlansContext(object):
 
     def end(self):
         for vlan in self.vlans:
-            vlan.down()
+            vlan.down(delete=self.delete)
 
     def __enter__(self):
         self.start()
@@ -74,12 +75,13 @@ class Vlan(object):
 
     def link_down(self):
         return utils.command_util('ip', 'link', 'set',
-                                  'dev', self.ident, 'up')
+                                  'dev', self.ident, 'down')
 
     def up(self):
         self.create()
         self.link_up()
 
-    def down(self):
-        self.link_down()
-        self.delete()
+    def down(self, delete=False):
+        if delete:
+            self.link_down()
+            self.delete()

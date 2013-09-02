@@ -19,7 +19,7 @@ import multiprocessing
 import functools
 import subprocess
 from dhcp_checker import utils
-from dhcp_checker import vlans
+from dhcp_checker import vlans_utils
 
 
 
@@ -65,13 +65,13 @@ def check_dhcp(ifaces, timeout=5, repeat=2):
         ((iface, timeout) for iface in ifaces_filtered*repeat)))
 
 
-def check_dhcp_with_vlans(iface, vlans, timeout=7, repeat=2):
+def check_dhcp_with_vlans(iface, vlans, timeout=5, repeat=2):
     """
     @ifaces - string : eth0, eth1
     @vlans - iterable (100, 101, 102)
     """
-    with vlans.VlansContext(iface, vlans) as vlan_list:
-        return check_dhcp([v.ident for v in vlan_list] + iface,
+    with vlans_utils.VlansContext(iface, vlans, delete=False) as vlan_list:
+        return check_dhcp([v.ident for v in vlan_list] + [iface],
             timeout=timeout, repeat=repeat)
 
 
@@ -79,7 +79,7 @@ def check_dhcp_with_vlans(iface, vlans, timeout=7, repeat=2):
 def check_dhcp_request(iface, server, range_start, range_end, timeout=5):
     """Provide interface, server endpoint and pool of ip adresses
         Should be used after offer received
-        >>> check_assignment('eth1','10.10.0.5','10.10.0.10','10.10.0.15')
+        >>> check_dhcp_request('eth1','10.10.0.5','10.10.0.10','10.10.0.15')
     """
 
     conf.iface = iface

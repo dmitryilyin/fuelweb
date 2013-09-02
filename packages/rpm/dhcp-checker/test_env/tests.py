@@ -19,7 +19,7 @@ import unittest
 import time
 
 from dhcp_checker import utils
-from dhcp_checker import vlans
+from dhcp_checker import vlans_utils
 from dhcp_checker import api
 
 
@@ -45,7 +45,7 @@ class VlanCreationTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.vlan = vlans.Vlan('eth0', '100')
+        cls.vlan = vlans_utils.Vlan('eth0', '100')
 
     def test_vlan_creation(self):
         self.vlan.up()
@@ -61,7 +61,7 @@ class VlanCreationTestCase(unittest.TestCase):
 class VlanCreationWithExistingTestCase(unittest.TestCase):
 
     def test_check_vlan_down_status(self):
-        self.vlan_down = vlans.Vlan('eth0', '110')
+        self.vlan_down = vlans_utils.Vlan('eth0', '110')
         self.vlan_down.create()
         time.sleep(5)
         self.assertEqual(self.vlan_down.state, 'DOWN')
@@ -69,7 +69,7 @@ class VlanCreationWithExistingTestCase(unittest.TestCase):
         time.sleep(5)
 
     def test_repeat_created_vlan(self):
-        self.vlan_up = vlans.Vlan('eth0', '112')
+        self.vlan_up = vlans_utils.Vlan('eth0', '112')
         self.vlan_up.up()
         time.sleep(5)
         self.assertEqual(self.vlan_up.state, 'UP')
@@ -81,7 +81,7 @@ class WithVlanDecoratorTestCase(unittest.TestCase):
 
 
     def test_with_vlan_enter(self):
-        with vlans.VlansContext('eth0', ('101','102','103')) as vlan_list:
+        with vlans_utils.VlansContext('eth0', ('101','102','103'), delete=True) as vlan_list:
             time.sleep(5)
             for v in vlan_list:
                 self.assertEqual('UP', v.state)

@@ -75,3 +75,26 @@ class ListDhcpAssignment(lister.Lister, BaseCommand):
         first = res.next()
         columns = first.keys()
         return columns, [first.values()] + [item.values() for item in res]
+
+
+class DhcpWithVlansCheck(lister.Lister, BaseCommand):
+    """Provide iface with list of vlans to check
+    If no vlans created - they will be. After creation they won't be deleted.
+    """
+
+    def get_parser(self, prog_name):
+        parser = super(DhcpWithVlansCheck, self).get_parser(prog_name)
+        parser.add_argument('iface',
+                             help='Ethernet interface name')
+        parser.add_argument('vlans', metavar='V', nargs='+',
+                             help='Vlans for ethernet interface')
+        return parser
+
+    def take_action(self, parsed_args):
+        res = api.check_dhcp_with_vlans(parsed_args.iface,
+                            parsed_args.vlans,
+                            timeout=parsed_args.timeout,
+                            repeat=parsed_args.repeat)
+        first = res.next()
+        columns = first.keys()
+        return columns, [first.values()] + [item.values() for item in res]
