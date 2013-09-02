@@ -567,6 +567,14 @@ class NailgunReceiver(object):
         TaskHelper.update_task_status(task_uuid, status,
                                       progress, error_msg, result)
 
+    @classmethod
+    def dhcp_check_resp(cls, **kwargs):
+        logger.info(
+            "RPC method dhcp_check_resp received: %s" %
+            json.dumps(kwargs)
+        )
+        pass
+
     # Red Hat related callbacks
 
     @classmethod

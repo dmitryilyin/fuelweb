@@ -548,6 +548,7 @@ class Task(Base):
         # network
         'check_networks',
         'verify_networks',
+        'dhcp_check',
 
         # plugin
         'install_plugin',

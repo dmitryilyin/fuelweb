@@ -554,10 +554,12 @@ class ClusterDeletionTask(object):
         DeletionTask.execute(task, 'remove_cluster_resp')
 
 
-class VerifyNetworksTask(object):
+class NetworkVerificationTask(object):
+
+    task_name = None
 
     @classmethod
-    def execute(self, task, data):
+    def _prepare_message(cls, task, data):
         nodes = []
         for n in task.cluster.nodes:
             node_json = {'uid': n.id, 'networks': []}
@@ -579,17 +581,34 @@ class VerifyNetworksTask(object):
                     {'iface': nic.name, 'vlans': vlans}
                 )
             nodes.append(node_json)
+        return message = {
+            'method': cls.task_name,
+            'respond_to': '{0}_resp'.format(cls.task_name),
+            'args': {'task_uuid': task.uuid,
+                     'nodes': cls._prepare_nodes_info(task, data)}}
 
-        message = {'method': 'verify_networks',
-                   'respond_to': 'verify_networks_resp',
-                   'args': {'task_uuid': task.uuid,
-                            'nodes': nodes}}
-        logger.debug("Network verification is called with: %s", message)
+    @classmethod
+    def execute(cls, task, data):
+        message = cls._prepare_message(task, data)
+        logger.debug("{0} method is called with: %s", cls.task_name, message)
 
         task.cache = message
         db().add(task)
         db().commit()
         rpc.cast('naily', message)
+
+
+
+class VerifyNetworksTask(NetworkVerificationTask):
+
+    task_name = 'verify_networks'
+
+
+
+class DhcpCheckTask(NetworkVerificationTask):
+
+    task_name = 'dhcp_check'
+
 
 
 class CheckNetworksTask(object):

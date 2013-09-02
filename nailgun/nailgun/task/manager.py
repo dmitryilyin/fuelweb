@@ -342,6 +342,18 @@ class VerifyNetworksTaskManager(TaskManager):
                 tasks.VerifyNetworksTask,
                 vlan_ids
             )
+
+        if task.status != 'error':
+            # if there is better way to do it, point me
+            task.name = 'dhcp_check'
+            db().add(task)
+            db().commit()
+            self._call_silently(
+                task,
+                tasks.DhcpCheckTask,
+                vlan_ids
+            )
+
         return task
 
 

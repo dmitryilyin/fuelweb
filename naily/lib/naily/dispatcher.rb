@@ -98,7 +98,13 @@ module Naily
     def verify_networks(data)
       reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
       args = data['args']
-      result = @orchestrator.verify_networks(reporter, data['args']['task_uuid'], args['nodes'])
+      result = @orchestrator.verify_networks(reporter, data['args']['task_uuid'], data['args']['nodes'])
+      report_result(result, reporter)
+    end
+
+    def dhcp_check(data)
+      reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args'], data['args']['task_uuid'])
+      result = @orchestrator.dhcp_check(reporter, data['args']['task_uuid'], data['args']['nodes'])
       report_result(result, reporter)
     end
 
@@ -126,7 +132,7 @@ module Naily
     end
 
     private
-    
+
     def report_result(result, reporter)
       result = {} unless result.instance_of?(Hash)
       status = {'status' => 'ready', 'progress' => 100}.merge(result)
