@@ -1,8 +1,5 @@
 .. _develop:
 
-Development Documentation
-=========================
-
 .. toctree::
    :maxdepth: 2
 
@@ -12,3 +9,4 @@ Development Documentation
    develop/nailgun
    develop/alternatives
    develop/api_doc
+   develop/module_structure
