@@ -10,3 +10,5 @@
    develop/alternatives
    develop/api_doc
    develop/module_structure
+   develop/fuel_settings
+   develop/puppet_tips
